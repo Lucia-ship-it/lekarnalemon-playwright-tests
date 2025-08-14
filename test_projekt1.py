@@ -11,8 +11,8 @@ def page():
         page = browser.new_page()
         yield page
 
-#pytest test_projekt.py
-# DEBUG
+        page.close()
+        browser.close()
 
 def accept_cookies(page: Page):
     try:
@@ -25,37 +25,37 @@ def accept_cookies(page: Page):
 
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
+#pytest test_projekt.py
+# DEBUG
+
+
+
 def test_title_lekarna(page: Page):
-    page.goto("https://www.lekarnalemon.cz/?srsltid=AfmBOooEQ8c3jgvq-BJtH48oN3GY7-c4_KsYt6MVQ4JPhedXCQ4LGWCp")
+    page.goto("https://www.lekarnalemon.cz/")
     title = page.title()
     print("Page title is:", title)
     
     assert "Profesionální péče o Vaše zdraví a krásu" in title
 
-# cookies
 def test_cookies_click(page: Page):
-    page.goto("https://www.lekarnalemon.cz/?srsltid=AfmBOooEQ8c3jgvq-BJtH48oN3GY7-c4_KsYt6MVQ4JPhedXCQ4LGWCp")
+    page.goto("https://www.lekarnalemon.cz/")
     button = page.locator("#cookiescript_accept") 
-    print("before click")
-
     button.click()
     page.wait_for_timeout(2000)
 
     print("after click")
-
     cookies_square = page.locator("#cookiescript_injected")
-     # overim, ze sa mi nezobrazuje
+    
     assert cookies_square.is_visible() == False
 
-
 def test_new_page(page: Page):
-    page.goto("https://www.lekarnalemon.cz/?srsltid=AfmBOooEQ8c3jgvq-BJtH48oN3GY7-c4_KsYt6MVQ4JPhedXCQ4LGWCp")
+    page.goto("https://www.lekarnalemon.cz/")
     accept_cookies(page)
     # na stranke najdi v menu leto a klikni nan
     button = page.locator("#desktop-a8ab5f3c-86fa-414f-999e-4601782baaec-dropdown")
     button.click()
 
-# rozbali sa mi ponuka, screenshot  
+    # rozbali sa mi ponuka menu, screenshot  
     page.wait_for_selector("body > header > div.page-header__navigation > div > nav > div.menu-item.menu-item-dropdown.show > div > div", 5000)
     page.screenshot(path="ponuka menu.png")
 
@@ -70,13 +70,23 @@ def test_new_page(page: Page):
 def test_cart(page: Page):
     page.goto("https://www.lekarnalemon.cz/leto/doplnky-stravy-na-opalovani")
     accept_cookies(page)
+
+    label = page.locator("label:has-text('GS')")
+    input_id = label.get_attribute("for")
+    checkbox = page.locator(f"input#{input_id}") #check len cez input
+    checkbox.check()
+    checkbox.wait_for(state="visible")
+
+    assert checkbox.is_checked(), "Checkbox pre GS nie je zaškrtnutý"
+
     # otvor si produkt 
     produkt = page.locator("h3.box__product-title:has-text('Gs Betakaroten gold 15 mg 30 kapslí')")
     produkt.click()
 
     assert page.url ==  "https://www.lekarnalemon.cz/leto/doplnky-stravy-na-opalovani/gs-betakaroten-gold-15mg-cps-30-8595693300541"
 
-    [print("pokracujeme na novej stranke")]
+
+    print("pokracujeme na novej stranke")
     page.wait_for_load_state("networkidle")
 
     buy_button = page.locator("#product-head div.js-buy-button > button") #snad ho najde
@@ -103,8 +113,9 @@ def test_cart(page: Page):
     # assert cart_content.filter(has_text="Betakaroten").is_visible()
 
 
- # chcem zistit jestli je videt text ri ikonke prihlasit sa
 def test_log_icon(page : Page):
+    '''chcem zistit jestli je videt text ri ikonke prihlasit sa
+'''
     page.goto("https://www.lekarnalemon.cz/")
     accept_cookies(page)
     icon = page.locator("body > header > div.container > div > div.page-header__top-nav > a:nth-child(2) > span.page-header__top-link--icon")
@@ -131,11 +142,12 @@ def test_log_in_negative(page: Page):
 def test_new_page(page: Page):
     page.goto("https://www.lekarnalemon.cz/")
     accept_cookies(page)
-    
+
     with page.expect_popup() as popup:
         button = page.locator("footer .page-footer__menu a:nth-child(1) picture img")
         button.click()
 
         new_page = popup.value
         assert new_page == "https://prehledy.sukl.cz/prehledy.html#/lekarny/00215013336?verify=true"
+
 
