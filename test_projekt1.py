@@ -2,7 +2,7 @@ from playwright.sync_api import Page
 from datetime import datetime
 import pytest
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def page():
     with sync_playwright() as p:
         browser = p.chromium.launch(headless=False, slow_mo=2000)
@@ -12,6 +12,17 @@ def page():
         yield page
 
 #pytest test_projekt.py
+# DEBUG
+
+def accept_cookies(page: Page):
+    try:
+        button = page.locator("#cookiescript_accept")
+        if button.is_visible():
+            button.click()
+            page.wait_for_timeout(1000)
+    except:
+        pass  
+
 timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
 
 def test_title_lekarna(page: Page):
@@ -39,6 +50,7 @@ def test_cookies_click(page: Page):
 
 def test_new_page(page: Page):
     page.goto("https://www.lekarnalemon.cz/?srsltid=AfmBOooEQ8c3jgvq-BJtH48oN3GY7-c4_KsYt6MVQ4JPhedXCQ4LGWCp")
+    accept_cookies(page)
     # na stranke najdi v menu leto a klikni nan
     button = page.locator("#desktop-a8ab5f3c-86fa-414f-999e-4601782baaec-dropdown")
     button.click()
@@ -57,6 +69,7 @@ def test_new_page(page: Page):
 
 def test_cart(page: Page):
     page.goto("https://www.lekarnalemon.cz/leto/doplnky-stravy-na-opalovani")
+    accept_cookies(page)
     # otvor si produkt 
     produkt = page.locator("h3.box__product-title:has-text('Gs Betakaroten gold 15 mg 30 kapslí')")
     produkt.click()
@@ -93,6 +106,7 @@ def test_cart(page: Page):
  # chcem zistit jestli je videt text ri ikonke prihlasit sa
 def test_log_icon(page : Page):
     page.goto("https://www.lekarnalemon.cz/")
+    accept_cookies(page)
     icon = page.locator("body > header > div.container > div > div.page-header__top-nav > a:nth-child(2) > span.page-header__top-link--icon")
     icon.hover(timeout=1000) 
     #kontrola na objavenie sa textu
@@ -103,6 +117,7 @@ def test_log_icon(page : Page):
 
 def test_log_in_negative(page: Page):
     page.goto("https://www.lekarnalemon.cz/login")
+    accept_cookies(page)
     page.fill("#_username", "test@email.com")
     page.fill("#_password", "heslo")
     page.press("#_password", "Enter")
@@ -115,7 +130,8 @@ def test_log_in_negative(page: Page):
 
 def test_new_page(page: Page):
     page.goto("https://www.lekarnalemon.cz/")
-
+    accept_cookies(page)
+    
     with page.expect_popup() as popup:
         button = page.locator("footer .page-footer__menu a:nth-child(1) picture img")
         button.click()
