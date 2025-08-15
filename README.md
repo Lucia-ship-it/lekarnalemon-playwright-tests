@@ -1,4 +1,4 @@
-# Automatizované testy pre lekarnalemon.cz
+# Automatizované testy Playwright
 
 Projekt do Engeto akadémie.
 Tento repozitár obsahuje automatizované **Playwright** testy, ktoré sú napísané v **Pythone**. 
