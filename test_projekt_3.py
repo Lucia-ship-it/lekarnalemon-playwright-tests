@@ -6,7 +6,7 @@ import pytest
 @pytest.fixture(scope="session")
 def page():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=False, slow_mo=2000)
+        browser = p.chromium.launch()#headless=False, slow_mo=2000)
         page = browser.new_page()
         yield page
 
@@ -63,7 +63,7 @@ def test_cart(page: Page):
     label = page.locator("label:has-text('GS')")
     label.click()
     checkbox = page.locator("input:checked")
-
+    
     assert checkbox.is_checked(), "Checkbox pre GS nie je zaškrtnutý"
 
     # otvor si produkt 
@@ -122,6 +122,7 @@ def test_new_page(page: Page):
         button.click()
 
         new_page = popup.value
+        new_page.wait_for_load_state("domcontentloaded")
         assert new_page.url == "https://prehledy.sukl.cz/prehledy.html#/lekarny/00215013336?verify=true"
 
 
