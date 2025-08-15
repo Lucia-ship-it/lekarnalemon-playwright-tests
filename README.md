@@ -1,2 +1,5 @@
-# lekarnalemon-playwright-tests
-Tento repozitár obsahuje funkcie pre automatizované testovanie web stránok: lekarnalemon.cz
+# Automatizované testy pre lekarnalemon.cz
+
+Projekt do Engeto akadémie.
+Tento repozitár obsahuje automatizované **Playwright** testy, ktoré sú napísané v **Pythone**. 
+Testy sú určené na automatizované testovanie webovej stránky [lekarnalemon.cz](https://www.lekarnalemon.cz/).
