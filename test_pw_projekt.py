@@ -1,28 +1,28 @@
-from playwright.sync_api import sync_playwright
-from playwright.sync_api import Page
-from datetime import datetime
+from playwright.sync_api import sync_playwright, Page
 import pytest
 
 @pytest.fixture(scope="session")
-def page():
+def browser():
     with sync_playwright() as p:
         browser = p.chromium.launch()#headless=False, slow_mo=2000)
-        page = browser.new_page()
-        yield page
-
-        page.close()
+        yield browser
         browser.close()
 
-# def accept_cookies(page: Page):
-#     try:
-#         button = page.locator("#cookiescript_accept")
-#         if button.is_visible():
-#             button.click()
-#             page.wait_for_timeout(1000)
-#     except:
-#         pass  
+@pytest.fixture()        
+def page(browser):
+    context = browser.new_context()
+    page = context.new_page()
+    yield page
+    page.close()
 
-timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+def accept_cookies(page: Page):
+    try:
+        button = page.locator("#cookiescript_accept")
+        if button.is_visible():
+            button.click()
+            page.wait_for_timeout(1000)
+    except:
+        pass  
 
 
 def test_title_lekarna(page: Page):
@@ -43,7 +43,7 @@ def test_cookies_click(page: Page):
 
 def test_dropdown_menu(page: Page):
     page.goto("https://www.lekarnalemon.cz/")
-    #accept_cookies(page)
+    accept_cookies(page)
     button = page.locator("#desktop-a8ab5f3c-86fa-414f-999e-4601782baaec-dropdown")
     button.click()
   
@@ -59,14 +59,14 @@ def test_dropdown_menu(page: Page):
 
 def test_cart(page: Page):
     page.goto("https://www.lekarnalemon.cz/leto/doplnky-stravy-na-opalovani")
-    #accept_cookies(page)
+    accept_cookies(page)
     label = page.locator("label:has-text('GS')")
-    label.click()
+    label.click() #Label nemá metódu .check(), lebo to len popis
     checkbox = page.locator("input:checked")
     
     assert checkbox.is_checked(), "Checkbox pre GS nie je zaškrtnutý"
 
-    # otvor si produkt 
+    # otvori produkt 
     produkt = page.locator("h3.box__product-title:has-text('Gs Betakaroten gold 15 mg 30 kapslí')")
     produkt.click()
 
@@ -76,6 +76,7 @@ def test_cart(page: Page):
     page.wait_for_load_state("networkidle")
     buy_button = page.locator("#product-head > div.container.mt-lg-4 > form > div > div:nth-child(2) > div > div > div > div.col-xl-7.col-lg-10.col-sm-9.col-md-6 > div > div.col-6.js-buy-button > button")
     buy_button.click()
+
     page.wait_for_selector("#modal-template-content > div.modal__body",timeout=5000)
     cart = page.locator("#modal-template-content div.cart-modal-buttons a")
     cart.click()
@@ -91,7 +92,7 @@ def test_cart(page: Page):
 
 def test_log_icon(page : Page):
     page.goto("https://www.lekarnalemon.cz/")
-    #accept_cookies(page)
+    accept_cookies(page)
     icon = page.locator("body > header > div.container > div > div.page-header__top-nav > a:nth-child(2) > span.page-header__top-link--icon")
     icon.hover(timeout=1000) 
 
@@ -102,7 +103,7 @@ def test_log_icon(page : Page):
 
 def test_log_in_negative(page: Page):
     page.goto("https://www.lekarnalemon.cz/login")
-    #accept_cookies(page)
+    accept_cookies(page)
     page.fill("#_username", "test@email.com")
     page.fill("#_password", "heslo")
     page.press("#_password", "Enter")
@@ -115,7 +116,7 @@ def test_log_in_negative(page: Page):
 
 def test_new_page(page: Page):
     page.goto("https://www.lekarnalemon.cz/")
-    #accept_cookies(page)
+    accept_cookies(page)
 
     with page.expect_popup() as popup:
         button = page.locator("footer .page-footer__menu a:nth-child(1) picture img")
